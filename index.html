@@ -3,68 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presensi Online Siswa</title>
+    <title>Presensi Siswa Kelas 5A</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        :root {
-            --primary-color: #4a90e2;
-            --bg-color: #f4f7f6;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 { color: #333; margin-bottom: 0.5rem; }
-        p { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        select:focus { border-color: var(--primary-color); }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover { background-color: #357abd; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #status { margin-top: 1rem; font-weight: bold; }
+        :root { --primary: #4a90e2; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 90%; max-width: 380px; text-align: center; }
+        h2 { color: #333; margin-bottom: 5px; }
+        #tgl { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
+        select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; outline: none; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status { margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="box">
     <h2>Presensi Kelas 5A</h2>
-    <p>Silakan pilih nama dan klik tombol hadir.</p>
+    <div id="tgl"></div>
     
     <select id="namaSiswa">
-        <option value="" disabled selected>-- Pilih Nama Anda --</option>
+        <option value="" disabled selected>-- Pilih Nama Kamu --</option>
         <option value="ADI PUTRA ANDIKA">ADI PUTRA ANDIKA</option>
         <option value="ALFARO PUTRA MUSA">ALFARO PUTRA MUSA</option>
         <option value="ANDI AFDHALUL FAUZA">ANDI AFDHALUL FAUZA</option>
@@ -94,53 +55,62 @@
 </div>
 
 <script>
-    async function kirimAbsen() {
-        const select = document.getElementById('namaSiswa');
-        const btn = document.getElementById('btnHadir');
-        const statusDiv = document.getElementById('status');
-        const nama = select.value;
-        
-        // SUDAH DIPERBAIKI DENGAN TANDA PETIK
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbw62on8QnjVQjAGDOxR2L1SgfTRh12xF5yZ5C0VLfCZTwolXxGXGt2N_Za9nheQEZu6/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxW4U3F36mbA_jR6hCv6PfsBkk6Y6Orz9rs5dUewGuMJHGe0Qgx1AlJSqq_JoF9dJ8W/exec';
+    
+    const hariIni = new Date().toLocaleDateString('en-CA');
+    document.getElementById('tgl').innerText = "Hari ini: " + new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        if (!nama) {
-            alert("Harap pilih nama terlebih dahulu!");
-            return;
+    window.onload = function() {
+        if (localStorage.getItem('absensi_5A') === hariIni) {
+            kunciTampilan();
+        }
+    };
+
+    function kunciTampilan() {
+        document.getElementById('btnHadir').disabled = true;
+        document.getElementById('btnHadir').innerText = "SUDAH ABSEN";
+        document.getElementById('status').innerText = "✅ Kamu sudah absen hari ini ya!";
+        document.getElementById('status').style.color = "green";
+    }
+
+    async function kirimAbsen() {
+        const nama = document.getElementById('namaSiswa').value;
+        const btn = document.getElementById('btnHadir');
+        const st = document.getElementById('status');
+
+        if (!nama) { 
+            Swal.fire({ icon: 'warning', title: 'Eh, Lupa!', text: 'Pilih nama kamu dulu ya!', confirmButtonColor: '#4a90e2' });
+            return; 
         }
 
         btn.disabled = true;
         btn.innerText = "Mengirim...";
-        statusDiv.innerText = "Sedang mencatat...";
-        statusDiv.style.color = "orange";
+        st.innerText = "Sabar ya, lagi dicatat...";
 
         try {
-            // Mode 'no-cors' kadang diperlukan jika ada masalah kebijakan akses, 
-            // tapi kita coba yang standar dulu.
             await fetch(scriptURL, {
                 method: 'POST',
-                mode: 'no-cors', // Menambahkan no-cors agar lebih aman dari pemblokiran browser
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    nama: nama, 
-                    kelas: "5A" 
-                })
+                mode: 'no-cors',
+                body: JSON.stringify({ nama: nama, kelas: "5A" })
             });
 
-            // Karena menggunakan no-cors, kita tidak bisa membaca response.ok
-            // Jadi kita asumsikan berhasil jika tidak masuk ke blok catch
-            statusDiv.innerText = "✅ Absen Berhasil Terkirim!";
-            statusDiv.style.color = "green";
-            btn.innerText = "Sudah Terabsen";
+            localStorage.setItem('absensi_5A', hariIni);
+            kunciTampilan();
             
-        } catch (error) {
-            statusDiv.innerText = "❌ Gagal. Coba lagi atau hubungi guru.";
-            statusDiv.style.color = "red";
+            // POP-UP KEREN BERHASIL
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Hore! Absen kamu sudah masuk. Selamat belajar!',
+                confirmButtonColor: '#4a90e2'
+            });
+            
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'Waduh!', text: 'Gagal kirim. Coba lagi ya!', confirmButtonColor: '#4a90e2' });
             btn.disabled = false;
             btn.innerText = "SAYA HADIR";
         }
     }
 </script>
-
 </body>
 </html>
